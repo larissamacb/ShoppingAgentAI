@@ -1,6 +1,6 @@
 {
   "name": "Java Jadex DevContainer",
-  "dockerFile": "../Dockerfile",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
   "settings": {},
   "customizations": {
     "vscode": {
