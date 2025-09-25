@@ -1,2 +1,2 @@
-# unieuro-meu-primeiro-jadex
-Exemplo de Prog Jadex em Java
+# Shopping AgentAI
+README em construção
