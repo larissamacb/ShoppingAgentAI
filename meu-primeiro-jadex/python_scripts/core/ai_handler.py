@@ -3,11 +3,45 @@ from dotenv import load_dotenv
 import json
 import sys
 import os
+import re # Necessario para a transliteracao
+
+# ***** SOLUÇÃO PARA O LOG VERBOSO DA IA (E0000 00:00...) *****
+# Configura o gRPC para suprimir logs verbosos de nível WARNING e INFO, mantendo apenas ERROR.
+os.environ['GRPC_VERBOSITY'] = 'ERROR' 
+os.environ['GRPC_TRACE'] = 'off' 
 
 MODEL_NAME = 'gemini-2.5-flash'
 
+def transliterate_pt(text):
+    """Substitui caracteres acentuados ou especiais (como ç e ã) por suas versoes sem acento."""
+    if not isinstance(text, str):
+        return text
+
+    replacements = {
+        'á': 'a', 'à': 'a', 'ã': 'a', 'â': 'a',
+        'é': 'e', 'ê': 'e',
+        'í': 'i',
+        'ó': 'o', 'ô': 'o', 'õ': 'o',
+        'ú': 'u',
+        'ç': 'c',
+        'Á': 'A', 'À': 'A', 'Ã': 'A', 'Â': 'A',
+        'É': 'E', 'Ê': 'E',
+        'Í': 'I',
+        'Ó': 'O', 'Ô': 'O', 'Õ': 'O',
+        'Ú': 'U',
+        'Ç': 'C',
+    }
+    
+    # Cria a expressao regular para buscar todos os caracteres na lista de substituicao
+    pattern = '[' + re.escape(''.join(replacements.keys())) + ']'
+    
+    # Usa re.sub para substituir todas as ocorrencias
+    return re.sub(pattern, lambda match: replacements.get(match.group(0), match.group(0)), text)
+
+
 def get_tags_from_ia(description, tag_map):
-    """Usa a IA para escolher as melhores tags de uma lista pré-definida."""
+    """Usa a IA para escolher as melhores tags de uma lista pre-definida."""
+    # NOTE: Nao aplicamos transliteracao aqui, pois as tags devem ser os nomes oficiais da Steam.
     try:
         load_dotenv()
         genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"))
@@ -15,9 +49,9 @@ def get_tags_from_ia(description, tag_map):
         
         tag_names = list(tag_map.keys())
         prompt = f"""
-        Você é um classificador especialista em tags da loja Steam. Sua tarefa é analisar a descrição de um usuário e escolher, da lista de tags oficiais fornecida abaixo, as 4 tags que melhor correspondem ao pedido.
-        Lista de Tags Oficiais Disponíveis: {tag_names}
-        Analise a seguinte descrição do usuário: "{description}"
+        Voce e um classificador especialista em tags da loja Steam. Sua tarefa e analisar a descricao de um usuario e escolher, da lista de tags oficiais fornecida abaixo, as 4 tags que melhor correspondem ao pedido.
+        Lista de Tags Oficiais Disponiveis: {tag_names}
+        Analise a seguinte descricao do usuario: "{description}"
         Sua resposta deve ser APENAS uma lista JSON de strings, contendo os nomes exatos das tags como aparecem na lista.
         """
         response = model.generate_content(prompt)
@@ -26,55 +60,11 @@ def get_tags_from_ia(description, tag_map):
         validated_tags = [tag for tag in tag_list if tag in tag_map]
         return validated_tags
     except Exception as e:
-        sys.stderr.write(f"Erro na IA (gerar tags): {e}\n") # Usa sys.stderr
+        sys.stderr.write(f"Erro na IA (gerar tags): {e}\n")
         return []
 
-def analyze_requirements_with_ia(user_pc, min_req_text, rec_req_text):
-    """Usa a IA com regras de MÁXIMO RIGOR para analisar os requisitos de hardware."""
-    try:
-        load_dotenv()
-        genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"))
-        model = genai.GenerativeModel(MODEL_NAME)
-
-        prompt = f"""
-        Aja como um analista de hardware extremamente lógico e literal. Sua única tarefa é comparar as especificações do PC de um usuário com os requisitos de um jogo e dar um veredito preciso, seguindo as regras abaixo sem desvio.
-
-        **REGRAS OBRIGATÓRIAS:**
-        1.  **CPU:** Ignore a família (i5 vs i7). Foque SOMENTE na geração e no modelo. Um i5-10400F é de 10ª geração. Um i7-4770K é de 4ª geração. 10 é maior que 4, portanto, o i5-10400F é superior. Se a geração do usuário for igual ou maior que a recomendada, ele atende.
-        2.  **GPU:** Compare as placas. Uma AMD RX 6500 XT é da série 6000. Ela é superior a uma Nvidia GTX 1060 (série 1000) e a uma AMD RX 480 (série 400). Se a GPU do usuário for de uma série mais nova e de performance comparável ou superior à recomendada, ele atende.
-        3.  **RAM:** Compare os números diretamente.
-        4.  **VEREDITO FINAL:**
-            - Se o PC do usuário atende ou supera **TODOS** os 3 campos (CPU, GPU, RAM) dos requisitos **RECOMENDADOS**, a resposta é "recomendados".
-            - Se o PC atende a **TODOS** os requisitos **MÍNIMOS**, mas falha em pelo menos um dos recomendados, o veredito é "mínimos".
-            - Se o PC falha em atender a **QUALQUER UM** dos requisitos **MÍNIMOS**, a resposta é "não roda bem".
-
-        **DADOS PARA ANÁLISE:**
-
-        **PC do Usuário:**
-        - CPU: {user_pc.get('cpu')}
-        - GPU: {user_pc.get('gpu')}
-        - RAM: {user_pc.get('ram')} GB
-
-        **Requisitos Mínimos do Jogo:**
-        "{min_req_text}"
-
-        **Requisitos Recomendados do Jogo:**
-        "{rec_req_text}"
-
-        Sua resposta deve ser APENAS UMA das três opções abaixo, sem saudações, explicações ou texto adicional:
-        1. "✅ Sim, atende aos recomendados."
-        2. "⚠️ Sim, atende aos mínimos."
-        3. "❌ Não, provavelmente não roda bem."
-        """
-        response = model.generate_content(prompt)
-        return response.text.strip()
-    except Exception as e:
-        sys.stderr.write(f"Erro na IA (análise de requisitos): {e}\n") # Usa sys.stderr
-        return "Não foi possível analisar os requisitos."
-
-
 def summarize_reviews_with_ia(positive_reviews, mixed_reviews, negative_reviews):
-    """Usa a IA para resumir os principais pontos dos comentários por sentimento."""
+    """Usa a IA para resumir os principais pontos dos comentarios por sentimento."""
     try:
         load_dotenv()
         genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"))
@@ -88,11 +78,11 @@ def summarize_reviews_with_ia(positive_reviews, mixed_reviews, negative_reviews)
         }
         
         prompt = f"""
-        Você é um analista de sentimento de jogos. Sua tarefa é ler as reviews de usuários 
-        (Positivas, Mistas e Negativas) e gerar três parágrafos de resumo concisos, um para cada sentimento.
-        Considere e deixe claro a quantidade de comentários coletados em cada seção.
+        Voce e um analista de sentimento de jogos. Sua tarefa e ler as reviews de usuarios 
+        (Positivas, Mistas e Negativas) e gerar tres paragrafos de resumo concisos, um para cada sentimento.
+        Considere e deixe claro a quantidade de comentarios coletados em cada secao.
         
-        Use as seguintes informações:
+        Use as seguintes informacoes:
         --- REVIEWS POSITIVAS ---
         {reviews_data['POSITIVAS']}
         
@@ -104,50 +94,59 @@ def summarize_reviews_with_ia(positive_reviews, mixed_reviews, negative_reviews)
         
         Sua resposta deve ser APENAS um objeto JSON no formato:
         {{
-            "resumo_positivo": "Um resumo conciso sobre o que os usuários mais elogiaram.",
-            "resumo_misto": "Um resumo sobre os pontos onde o jogo é divisivo ou neutro.",
-            "resumo_negativo": "Um resumo conciso sobre as principais críticas e falhas mencionadas."
+            "resumo_positivo": "Um resumo conciso sobre o que os usuarios mais elogiaram.",
+            "resumo_misto": "Um resumo sobre os pontos onde o jogo e divisivo ou neutro.",
+            "resumo_negativo": "Um resumo conciso sobre as principais criticas e falhas mencionadas."
         }}
         """
         response = model.generate_content(prompt)
         cleaned_response = response.text.strip().replace('```json', '').replace('```', '')
         
-        return json.loads(cleaned_response)
+        summary_data = json.loads(cleaned_response)
+        
+        # APLICANDO A TRANSLITERAÇÃO NOS RESUMOS DE REVIEW (Valores do JSON)
+        return {
+            "resumo_positivo": transliterate_pt(summary_data.get("resumo_positivo", "")),
+            "resumo_misto": transliterate_pt(summary_data.get("resumo_misto", "")),
+            "resumo_negativo": transliterate_pt(summary_data.get("resumo_negativo", ""))
+        }
     
     except Exception as e:
-        sys.stderr.write(f"Erro na IA (resumo de reviews): {e}\n") # Usa sys.stderr
+        sys.stderr.write(f"Erro na IA (resumo de reviews): {e}\n") 
         return {
-            "resumo_positivo": "Não foi possível gerar o resumo positivo.",
-            "resumo_misto": "Não foi possível gerar o resumo misto.",
-            "resumo_negativo": "Não foi possível gerar o resumo negativo."
+            "resumo_positivo": "Nao foi possivel gerar o resumo positivo.",
+            "resumo_misto": "Nao foi possivel gerar o resumo misto.",
+            "resumo_negativo": "Nao foi possivel gerar o resumo negativo."
         }
     
 
 def generate_final_recommendations_with_ia(user_query, games_data):
-    """Gera um parágrafo de resumo recomendando os melhores jogos da lista encontrada, usando Metascore e resumos de reviews."""
+    """Gera um paragrafo de resumo recomendando os melhores jogos da lista encontrada, usando Metascore e resumos de reviews."""
     try:
         load_dotenv()
         genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"))
         model = genai.GenerativeModel(MODEL_NAME)
         
-        # O games_data virá com os novos campos de resumo (Metascore, Summary Positive, etc.) anexados.
         games_json = json.dumps(games_data, indent=2, ensure_ascii=False)
         
         prompt = f"""
-        Aja como um assistente de jogos. O usuário pesquisou por: "{user_query}".
+        Aja como um assistente de jogos. O usuario pesquisou por: "{user_query}".
         
-        Estes são os dados dos jogos encontrados (incluindo Metascore e resumos de reviews): {games_json}
+        Estes sao os dados dos jogos encontrados (incluindo Metascore e resumos de reviews): {games_json}
         
-        **INSTRUÇÕES OBRIGATÓRIAS:**
-        1. **Foco:** Recomende 1 ou 2 jogos da lista que sejam compatíveis com o PC do usuário (onde "PC Roda?" não é '❌'). Se todos falharem, justifique a falha.
+        **INSTRUCOES OBRIGATORIAS:**
+        1. **Foco:** Recomende 1 ou 2 jogos da lista que sejam mais adequados a descricao do usuario.
         2. **Justificativa:** Justifique a escolha baseando-se em:
+           - **Descricao do Jogo:** Relacione com a busca do usuario.
            - **Notas:** Mencione o 'Metascore' e o 'User Score'.
-           - **Preço** (Se é caro ou barato).
-           - **Experiência do Usuário:** Use os campos 'Summary Positive', 'Summary Mixed', e 'Summary Negative' para descrever a experiência de usuário.
-        3. **Formato:** Escreva um parágrafo de "Recomendação da IA". Comece DIRETAMENTE com a recomendação (ex: "Baseado na sua busca...").
+           - **Preco** (Se e caro ou barato).
+           - **Experiencia do Usuario:** Use os campos 'Summary Positive', 'Summary Mixed', e 'Summary Negative' para descrever a experiencia de usuario.
+        3. **Formato:** Escreva um paragrafo de "Recomendacao da IA". Comece DIRETAMENTE com a recomendacao (ex: "Baseado na sua busca...").
         """
         response = model.generate_content(prompt)
-        return response.text.strip()
+        
+        # APLICANDO A TRANSLITERAÇÃO NO TEXTO FINAL
+        return transliterate_pt(response.text.strip())
     except Exception as e:
-        sys.stderr.write(f"Erro na IA (resumo final): {e}\n") # Usa sys.stderr
-        return "Não foi possível gerar o resumo."
+        sys.stderr.write(f"Erro na IA (resumo final): {e}\n")
+        return "Nao foi possivel gerar o resumo."

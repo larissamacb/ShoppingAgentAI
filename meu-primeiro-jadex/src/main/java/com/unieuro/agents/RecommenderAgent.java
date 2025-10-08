@@ -24,11 +24,12 @@ public class RecommenderAgent {
     @OnStart
     void run(IInternalAccess agent) {
         
+        // ... (Código de Interação com o Usuário e Passos 1 & 2 mantidos) ...
+
         // --- Interação com o Usuário para coletar INPUTS ---
         System.out.println("--- Bem-vindo ao Recomendador de Jogos da Steam! ---");
         Scanner scanner = new Scanner(System.in);
         
-        // Remoção da referência a 'atualizar pc'
         System.out.print("Descreva o tipo de jogo que você quer jogar (ou digite 'sair'): ");
         String userDescription = scanner.nextLine().trim();
         
@@ -49,10 +50,7 @@ public class RecommenderAgent {
             }
         }
         
-        // --- REMOVIDO PASSO 1: Obter Specs do PC ---
-        // pcSpecsJson foi removido, assim como a execução do adapter_get_pc_specs.py
-
-        // --- PASSO 1: Gerando tags com a IA --- (Anteriormente Passo 2)
+        // --- PASSO 1: Gerando tags com a IA ---
         System.out.println("\nConsultando a IA para gerar tags de busca...");
         PythonExecutor.PythonResult tagsResult = PythonExecutor.execute("adapter_get_tags.py", userDescription);
 
@@ -66,7 +64,7 @@ public class RecommenderAgent {
         List<String> tags = tagsMap.get("tags");
         System.out.println("Tags oficiais selecionadas pela IA: " + String.join(", ", tags));
         
-        // --- PASSO 2: Buscando URLs dos Jogos --- (Anteriormente Passo 3)
+        // --- PASSO 2: Buscando URLs dos Jogos ---
         System.out.println("\nPasso 2: Buscando URLs dos jogos na Steam...");
         String tagsJsonForArg = gson.toJson(tags);
         PythonExecutor.PythonResult urlsResult = PythonExecutor.execute("adapter_get_game_urls.py", tagsJsonForArg, String.valueOf(numGames));
@@ -81,16 +79,16 @@ public class RecommenderAgent {
         List<String> gameUrls = urlsMap.get("urls");
         System.out.println("Encontradas " + gameUrls.size() + " URLs de jogos para analisar.");
 
-        // --- PASSO 3: Loop para Analisar Cada Jogo --- (Anteriormente Passo 4)
+        // --- PASSO 3: Loop para Analisar Cada Jogo ---
         System.out.println("\n--- Coletando Dados dos Jogos Encontrados ---");
         List<Map<String, Object>> allGamesData = new ArrayList<>();
 
         for(String url : gameUrls) {
-            System.out.println("==================================================");
-            System.out.println("🔎 Analisando URL: " + url);
+            // REMOVIDO: Linha '=================================================='
 
             // 3a. Coleta de Detalhes
             PythonExecutor.PythonResult detailsResult = PythonExecutor.execute("adapter_scrape_details.py", url);
+            
             if(!detailsResult.isSuccess()) {
                 System.err.println("Falha ao obter detalhes para " + url + ". Pulando.");
                 continue;
@@ -98,9 +96,11 @@ public class RecommenderAgent {
             
             String detailsJsonOutput = detailsResult.getOutput().trim();
             Map<String, Object> gameDetails = gson.fromJson(detailsJsonOutput, new TypeToken<Map<String, Object>>(){}.getType());
-            System.out.println("Detalhes coletados para: " + gameDetails.get("name"));
             
-            // --- REMOVIDO 3b. Análise de Requisitos com IA (adapter_check_reqs.py) ---
+            String gameName = (String) gameDetails.get("name");
+            
+            // NOVO OUTPUT SIMPLIFICADO: Mostra apenas o nome do jogo
+            System.out.println("Pesquisando detalhes para: " + gameName);
             
             // 3b. Consolidação dos Dados
             Map<String, Object> consolidatedData = new HashMap<>();
@@ -114,16 +114,16 @@ public class RecommenderAgent {
             consolidatedData.put("Summary Mixed", gameDetails.getOrDefault("summary_mixed", "N/A"));
             consolidatedData.put("Summary Negative", gameDetails.getOrDefault("summary_negative", "N/A"));
             
-            // Campo 'PC Roda?' foi removido.
+            // Outros campos
             consolidatedData.put("Tags", gameDetails.get("tags_steam")); 
             allGamesData.add(consolidatedData);
             
-            System.out.println("******************** " + gameDetails.get("name") + " ********************");
+            // REMOVIDO: Linha '******************** DAVE THE DIVER ********************'
         }
-
-        // --- PASSO 4: GERAR RECOMENDAÇÃO FINAL --- (Anteriormente Passo 5)
+        
+        // --- PASSO 4: GERAR RECOMENDAÇÃO FINAL ---
         System.out.println("\n========================= RESUMO FINAL =========================");
-        System.out.println("🤖 Gerando recomendacao final com base nos resultados...");
+        System.out.println("Gerando recomendacao final com base nos resultados...");
         
         if(!allGamesData.isEmpty()) {
             String allGamesJson = gson.toJson(allGamesData);
@@ -137,7 +137,7 @@ public class RecommenderAgent {
                 System.out.println("\nRecomendacao da IA:");
                 System.out.println(recomendacao);
             } else {
-                System.err.println("Falha ao gerar recomendacaoo final: " + finalRecResult.getOutput());
+                System.err.println("Falha ao gerar recomendacao final: " + finalRecResult.getOutput());
             }
         }
 
@@ -145,9 +145,7 @@ public class RecommenderAgent {
     }
 
     public static void main(String[] args) {
-        
-        // --- REMOVIDA LÓGICA DE CONFIGURAÇÃO INICIAL DO PC ---
-        
+        // --- CÓDIGO DO main() MANTIDO INALTERADO ---
         System.out.println("\nIniciando plataforma de agentes...");
         IPlatformConfiguration config = PlatformConfigurationHandler.getMinimal();
         config.addComponent(RecommenderAgent.class);
