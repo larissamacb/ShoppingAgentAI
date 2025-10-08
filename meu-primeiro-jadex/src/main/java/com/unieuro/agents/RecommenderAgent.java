@@ -23,14 +23,12 @@ public class RecommenderAgent {
 
     @OnStart
     void run(IInternalAccess agent) {
-        
-        // ... (Código de Interação com o Usuário e Passos 1 & 2 mantidos) ...
 
         // --- Interação com o Usuário para coletar INPUTS ---
         System.out.println("--- Bem-vindo ao Recomendador de Jogos da Steam! ---");
         Scanner scanner = new Scanner(System.in);
         
-        System.out.print("Descreva o tipo de jogo que você quer jogar (ou digite 'sair'): ");
+        System.out.print("Descreva o tipo de jogo que voce quer jogar (ou digite 'sair'): ");
         String userDescription = scanner.nextLine().trim();
         
         if (userDescription.equalsIgnoreCase("sair")) {
@@ -51,7 +49,7 @@ public class RecommenderAgent {
         }
         
         // --- PASSO 1: Gerando tags com a IA ---
-        System.out.println("\nConsultando a IA para gerar tags de busca...");
+        System.out.println("\nIniciando busca...");
         PythonExecutor.PythonResult tagsResult = PythonExecutor.execute("adapter_get_tags.py", userDescription);
 
         if (!tagsResult.isSuccess()) {
@@ -62,10 +60,8 @@ public class RecommenderAgent {
         String tagsJsonOutput = tagsResult.getOutput().trim();
         Map<String, List<String>> tagsMap = gson.fromJson(tagsJsonOutput, new TypeToken<Map<String, List<String>>>(){}.getType());
         List<String> tags = tagsMap.get("tags");
-        System.out.println("Tags oficiais selecionadas pela IA: " + String.join(", ", tags));
         
         // --- PASSO 2: Buscando URLs dos Jogos ---
-        System.out.println("\nPasso 2: Buscando URLs dos jogos na Steam...");
         String tagsJsonForArg = gson.toJson(tags);
         PythonExecutor.PythonResult urlsResult = PythonExecutor.execute("adapter_get_game_urls.py", tagsJsonForArg, String.valueOf(numGames));
 
@@ -84,7 +80,6 @@ public class RecommenderAgent {
         List<Map<String, Object>> allGamesData = new ArrayList<>();
 
         for(String url : gameUrls) {
-            // REMOVIDO: Linha '=================================================='
 
             // 3a. Coleta de Detalhes
             PythonExecutor.PythonResult detailsResult = PythonExecutor.execute("adapter_scrape_details.py", url);
@@ -98,8 +93,7 @@ public class RecommenderAgent {
             Map<String, Object> gameDetails = gson.fromJson(detailsJsonOutput, new TypeToken<Map<String, Object>>(){}.getType());
             
             String gameName = (String) gameDetails.get("name");
-            
-            // NOVO OUTPUT SIMPLIFICADO: Mostra apenas o nome do jogo
+        
             System.out.println("Pesquisando detalhes para: " + gameName);
             
             // 3b. Consolidação dos Dados
@@ -117,13 +111,12 @@ public class RecommenderAgent {
             // Outros campos
             consolidatedData.put("Tags", gameDetails.get("tags_steam")); 
             allGamesData.add(consolidatedData);
-            
-            // REMOVIDO: Linha '******************** DAVE THE DIVER ********************'
+        
         }
         
         // --- PASSO 4: GERAR RECOMENDAÇÃO FINAL ---
-        System.out.println("\n========================= RESUMO FINAL =========================");
-        System.out.println("Gerando recomendacao final com base nos resultados...");
+        System.out.println("\n========================= ENCONTREI O SEU JOGO IDEAL! =========================");
+        System.out.println("Aguarde um momento, estou gerando a recomendação...");
         
         if(!allGamesData.isEmpty()) {
             String allGamesJson = gson.toJson(allGamesData);
@@ -132,7 +125,7 @@ public class RecommenderAgent {
             if(finalRecResult.isSuccess()) {
                 String finalRecJsonOutput = finalRecResult.getOutput().trim();
                 Map<String, String> finalRecMap = gson.fromJson(finalRecJsonOutput, new TypeToken<Map<String, String>>(){}.getType());
-                String recomendacao = finalRecMap.getOrDefault("resumo", "Nao foi possivel gerar o resumo.");
+                String recomendacao = finalRecMap.getOrDefault("resumo", "Nao foi possivel gerar a recomendacao. Tente outra vez!");
                 
                 System.out.println("\nRecomendacao da IA:");
                 System.out.println(recomendacao);
@@ -145,7 +138,6 @@ public class RecommenderAgent {
     }
 
     public static void main(String[] args) {
-        // --- CÓDIGO DO main() MANTIDO INALTERADO ---
         System.out.println("\nIniciando plataforma de agentes...");
         IPlatformConfiguration config = PlatformConfigurationHandler.getMinimal();
         config.addComponent(RecommenderAgent.class);

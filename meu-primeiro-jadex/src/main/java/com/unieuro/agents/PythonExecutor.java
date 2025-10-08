@@ -14,9 +14,6 @@ import java.util.stream.Collectors;
  */
 public class PythonExecutor {
 
-    /**
-     * Classe interna para armazenar o resultado da execução do script Python.
-     */
     public static class PythonResult {
         private final boolean success;
         private final String output;
@@ -35,24 +32,13 @@ public class PythonExecutor {
         }
     }
 
-    /**
-     * Executa um script Python em um processo separado.
-     *
-     * O primeiro argumento no 'command' deve ser o nome do arquivo Python (ex: "meu_script.py").
-     *
-     * @param command O nome do script Python e seus argumentos.
-     * @return Um objeto PythonResult com o resultado da execução.
-     */
     public static PythonResult execute(String... command) {
         List<String> commandList = new ArrayList<>();
         commandList.add("python3");
 
-        // CORREÇÃO DE CAMINHO: Assumindo que o script está em 'python_scripts/adapters/'
-        // O comando[0] deve ser apenas o nome do script (ex: "adapter_get_tags.py")
         String scriptPath = "python_scripts/adapters/" + command[0];
         commandList.add(scriptPath);
 
-        // Adiciona os argumentos restantes do script
         for (int i = 1; i < command.length; i++) {
             commandList.add(command[i]);
         }
@@ -85,27 +71,18 @@ public class PythonExecutor {
                 }
             }
 
-            // Espera pelo processo, com um timeout de 120 segundos
             if (!process.waitFor(120, TimeUnit.SECONDS)) {
                 process.destroy();
                 return new PythonResult(false, "{\"erro\": \"Timeout: O script Python demorou mais de 120 segundos para responder.\"}");
             }
 
-            System.out.println("--- DEBUG PYTHON-JAVA --- Recebido do Python (Saída Padrão Limpa): [" + finalOutput + "]");
-            if(errorOutput.length() > 0) {
-                System.out.println("--- DEBUG PYTHON-JAVA --- Recebido do Python (Saída de Erro): [" + errorOutput.toString().trim() + "]");
-            }
-
             if (process.exitValue() == 0) {
-                // Sucesso
                 return new PythonResult(true, finalOutput);
             } else {
-                // Erro na execução do script
                 String cleanError = errorOutput.toString().replace("\"", "'").trim();
                 return new PythonResult(false, "{\"erro\": \"O script Python retornou um erro.\", \"detalhes\": \"" + cleanError + "\"}");
             }
         } catch (Exception e) {
-            // Erro ao iniciar ou interagir com o processo
             e.printStackTrace();
             return new PythonResult(false, "{\"erro\": \"Falha ao executar o processo Python: " + e.getMessage() + "\"}");
         }

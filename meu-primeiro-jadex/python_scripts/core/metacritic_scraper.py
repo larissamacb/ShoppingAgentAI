@@ -4,7 +4,6 @@ import re
 import json
 import sys 
 
-# Definimos as constantes do filtro
 POSITIVE_FILTER = "Positive%20Reviews"
 NEGATIVE_FILTER = "Negative%20Reviews"
 MIXED_FILTER = "Mixed%20Reviews"
@@ -18,7 +17,6 @@ def get_reviews_from_url_with_fallback(game_name, base_url_user, sentiment_class
     current_reviews = []
     
     # --- 1. TENTATIVA INICIAL: USER REVIEWS ---
-    # A URL base já é a página de reviews, então apenas adicionamos o filtro.
     url_user = f"{base_url_user}&filter={sentiment_class}"
     current_reviews.extend(_scrape_single_page(url_user, sentiment_class, LIMIT_REVIEWS))
     
@@ -54,13 +52,11 @@ def _scrape_single_page(url, sentiment_class, limit):
 
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # Seleciona as quotes, que são o corpo da review
         comment_quote_elems = soup.select('div.c-siteReview_quote')
         
         for quote_div in comment_quote_elems[:limit]:
             comment_span = quote_div.find('span')
             if comment_span:
-                # CORREÇÃO: Tag simplificada (ex: [POSITIVE])
                 tag = sentiment_class.upper() 
                 comments.append(f"[{tag}]: {comment_span.text.strip()}")
                 
@@ -113,7 +109,7 @@ def scrape_metacritic(game_name, steam_id):
                 data['metascore'] = score_span.text.strip()
 
         # Extração do USER SCORE
-        # Busca o div que contém 'user' na classe (sua identificação anterior)
+        # Busca o div que contém 'user' na classe
         user_score_div = soup.find('div', class_=re.compile(r'c-siteReviewScore_user'))
         if user_score_div:
             score_span = user_score_div.find('span')
@@ -125,7 +121,6 @@ def scrape_metacritic(game_name, steam_id):
         return data
 
     # 3. Coletar Reviews com Fallback (usa a URL de user reviews para o scraping)
-    
     data['reviews_positive'] = get_reviews_from_url_with_fallback(game_name, base_url_user, POSITIVE_FILTER)
     data['reviews_mixed'] = get_reviews_from_url_with_fallback(game_name, base_url_user, MIXED_FILTER)
     data['reviews_negative'] = get_reviews_from_url_with_fallback(game_name, base_url_user, NEGATIVE_FILTER)
