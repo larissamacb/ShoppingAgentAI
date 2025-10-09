@@ -8,7 +8,7 @@ Este projeto foca em coletar dados de múltiplas fontes (Steam e Metacritic) par
 
 ## 📝 Índice
 
-- [Sobre o Projeto](#-sobre-o-projeto)
+- [📖 Sobre o Projeto](#-sobre-o-projeto)
  - [✨ Funcionalidades](#-funcionalidades)
  - [⚙️ Arquitetura do Sistema](#%EF%B8%8F-arquitetura-do-sistema)
  - [🛠️ Tecnologias Utilizadas](#%EF%B8%8F-tecnologias-utilizadas)
