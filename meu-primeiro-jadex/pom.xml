@@ -41,7 +41,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
                 <configuration>
-                    <mainClass>com.unieuro.agents.RecommenderAgent</mainClass>
+                    <mainClass>com.unieuro.agents.OrchestratorAgent</mainClass>
                     <arguments>
                         <argument>-Dfile.encoding=UTF-8</argument>
                     </arguments>
