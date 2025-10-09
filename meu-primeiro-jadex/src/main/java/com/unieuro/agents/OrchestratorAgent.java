@@ -116,7 +116,7 @@ public class OrchestratorAgent {
         
         // --- PASSO 4: GERAR RECOMENDAÇÃO FINAL ---
         System.out.println("\n========================= ENCONTREI O SEU JOGO IDEAL! =========================");
-        System.out.println("Aguarde um momento, estou gerando a recomendação...");
+        System.out.println("Aguarde um momento, estou gerando a recomendacao...");
         
         if(!allGamesData.isEmpty()) {
             String allGamesJson = gson.toJson(allGamesData);
