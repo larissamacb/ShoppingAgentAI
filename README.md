@@ -1,4 +1,4 @@
-# 🛒 Vicia AI
+# 🎮 Vicia AI
 
 Um sistema de recomendação de jogos que utiliza a plataforma multiagente Jadex para orquestrar o web scraping e a Inteligência Artificial (Gemini) para analisar dados e gerar recomendações personalizadas.
 
@@ -8,15 +8,15 @@ Este projeto foca em coletar dados de múltiplas fontes (Steam e Metacritic) par
 
 ## 📝 Índice
 
-  - [Sobre o Projeto](https://www.google.com/search?q=%23-sobre-o-projeto)
-  - [✨ Funcionalidades](https://www.google.com/search?q=%23-funcionalidades)
-  - [⚙️ Arquitetura do Sistema](https://www.google.com/search?q=%23%EF%B8%8F-arquitetura-do-sistema)
-  - [🛠️ Tecnologias Utilizadas](https://www.google.com/search?q=%23%EF%B8%8F-tecnologias-utilizadas)
-  - [🚀 Como Executar](https://www.google.com/search?q=%23-como-executar)
-      - [Pré-requisitos](https://www.google.com/search?q=%23pr%C3%A9-requisitos)
-      - [Instalação](https://www.google.com/search?q=%23instala%C3%A7%C3%A3o)
-      - [Uso](https://www.google.com/search?q=%23uso)
-  - [🗺️ Roadmap](https://www.google.com/search?q=%23%EF%B8%8F-roadmap)
+- [Sobre o Projeto](#-sobre-o-projeto)
+ - [✨ Funcionalidades](#-funcionalidades)
+ - [⚙️ Arquitetura do Sistema](#%EF%B8%8F-arquitetura-do-sistema)
+ - [🛠️ Tecnologias Utilizadas](#%EF%B8%8F-tecnologias-utilizadas)
+ - [🚀 Como Executar](#-como-executar)
+     - [Pré-requisitos](#pr-requisitos)
+     - [Instalação](#instalao)
+     - [Uso](#uso)
+ - [🗺️ Roadmap](#-roadmap)
 
 -----
 
