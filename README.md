@@ -16,7 +16,7 @@ Este projeto foca em coletar dados de múltiplas fontes (Steam e Metacritic) par
      - [Pré-requisitos](#pré-requisitos)
      - [Instalação](#instalação)
      - [Uso](#uso)
- - [🗺️ Roadmap](#-roadmap)
+ - [🗺️ Roadmap](#roadmap)
 
 -----
 
