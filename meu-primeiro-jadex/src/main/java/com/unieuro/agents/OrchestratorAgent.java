@@ -17,7 +17,7 @@ import jadex.bridge.service.annotation.OnStart;
 import jadex.micro.annotation.Agent;
 
 @Agent
-public class RecommenderAgent {
+public class OrchestratorAgent {
     
     private final Gson gson = new Gson();
 
@@ -138,9 +138,8 @@ public class RecommenderAgent {
     }
 
     public static void main(String[] args) {
-        System.out.println("\nIniciando plataforma de agentes...");
         IPlatformConfiguration config = PlatformConfigurationHandler.getMinimal();
-        config.addComponent(RecommenderAgent.class);
+        config.addComponent(OrchestratorAgent.class);
         Starter.createPlatform(config).get();
     }
 }
