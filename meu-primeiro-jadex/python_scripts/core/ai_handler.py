@@ -142,6 +142,7 @@ def generate_final_recommendations_with_ia(user_query, games_data):
            - **Preco** (Se e caro ou barato).
            - **Experiencia do Usuario:** Use os campos 'Summary Positive', 'Summary Mixed', e 'Summary Negative' para descrever a experiencia de usuario.
         3. **Formato:** Escreva um paragrafo de "Recomendacao da IA". Comece DIRETAMENTE com a recomendacao (ex: "Baseado na sua busca...").
+        4. **Linguagem:** Use portugues claro e simples, adequado para um usuario leigo
         """
         response = model.generate_content(prompt)
         
