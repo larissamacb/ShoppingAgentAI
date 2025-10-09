@@ -13,8 +13,8 @@ Este projeto foca em coletar dados de múltiplas fontes (Steam e Metacritic) par
  - [⚙️ Arquitetura do Sistema](#%EF%B8%8F-arquitetura-do-sistema)
  - [🛠️ Tecnologias Utilizadas](#%EF%B8%8F-tecnologias-utilizadas)
  - [🚀 Como Executar](#-como-executar)
-     - [Pré-requisitos](#pr-requisitos)
-     - [Instalação](#instalao)
+     - [Pré-requisitos](#pré-requisitos)
+     - [Instalação](#instalação)
      - [Uso](#uso)
  - [🗺️ Roadmap](#-roadmap)
 
