@@ -1,0 +1,15 @@
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:noNamespaceSchemaLocation="http://jadex.sourceforge.net/xsd/jadex-application-3.0.xsd"
+             name="FinalTest"
+             package="desastre">
+    <imports>
+        <import>desastre.HelloAgent</import>
+    </imports>
+    <components>
+        <component name="hello_agent" type="bdiv3">
+            <creation>
+                <body class="HelloAgent"/>
+            </creation>
+        </component>
+    </components>
+</application>

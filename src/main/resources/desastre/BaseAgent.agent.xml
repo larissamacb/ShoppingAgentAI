@@ -1,0 +1,9 @@
+<agent xmlns="http://jadex.sourceforge.net/jadex-bdi"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://jadex.sourceforge.net/jadex-bdi http://jadex.sourceforge.net/jadex-bdi-v3.xsd"
+       name="BaseAgentBDI"
+       agenttype="bdiv3">
+
+    <implementation class="desastre.BaseAgent"/>
+
+</agent>

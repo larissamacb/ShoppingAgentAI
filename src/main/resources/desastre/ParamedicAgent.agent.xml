@@ -1,0 +1,20 @@
+<agent xmlns="http://jadex.sourceforge.net/jadex-bdi"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://jadex.sourceforge.net/jadex-bdi http://jadex.sourceforge.net/jadex-bdi-v3.xsd"
+       name="ParamedicBDI"
+       agenttype="bdiv3">
+
+    <implementation class="desastre.ParamedicAgent"/>
+
+    <plans>
+        <plan trigger="goal">
+            <goal class="ParamedicAgent$Rescue"/>
+            <body class="desastre.RescueCivilianPlan"/>
+        </plan>
+        <plan trigger="goal">
+            <goal class="desastre.GoGoal"/>
+            <body class="desastre.GoPlanEnv"/>
+        </plan>
+    </plans>
+
+</agent>
