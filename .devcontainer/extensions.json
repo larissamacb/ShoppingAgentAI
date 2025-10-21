@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "oracle.oracle-java",
+    "vscjava.vscode-java-pack",
+    "vscjava.vscode-maven",
+    "mhutchie.git-graph",
+    "redhat.java"
+  ]
+}

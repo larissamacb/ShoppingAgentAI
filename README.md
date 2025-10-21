@@ -106,8 +106,7 @@ Siga os passos no terminal do Codespaces para preparar o ambiente:
 
     ```bash
     apt update
-    apt install maven
-    apt install python3 python3-pip
+    apt install maven python3 python3-pip
     ```
 
 3.  **Instalar Dependências Python (Bibliotecas):**
