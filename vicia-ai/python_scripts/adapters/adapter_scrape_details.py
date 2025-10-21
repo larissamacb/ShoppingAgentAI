@@ -7,7 +7,6 @@ import re
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from core import steam_scraper
 from core import metacritic_scraper
-# A importação do ai_handler foi removida, pois não é mais usada aqui.
 
 
 if __name__ == "__main__":
@@ -30,24 +29,18 @@ if __name__ == "__main__":
         game_name = steam_data.get('name')
         meta_data = metacritic_scraper.scrape_metacritic(game_name, steam_id=steam_id) 
         
-        # Passo 3: Coletar Reviews (O passo de resumir foi removido)
+        # Passo 3: Coletar Reviews
         positive = meta_data.get('reviews_positive', [])
         mixed = meta_data.get('reviews_mixed', [])
         negative = meta_data.get('reviews_negative', [])
-        
-        # A chamada para ai_handler.summarize_reviews_with_ia() foi removida.
         
         # Passo 4: Juntar os resultados
         final_data = {
             **steam_data, 
             "user_score": meta_data.get('user_score', 'N/A'),
-            
-            # Inclui as reviews brutas (necessário para a nova recomendação)
             "reviews_positive": positive,
             "reviews_mixed": mixed,
             "reviews_negative": negative
-            
-            # Os campos "summary_positive", "summary_mixed" e "summary_negative" foram removidos.
         }
         
         # Apenas o JSON final no stdout
