@@ -122,7 +122,7 @@ Execute o projeto através do Maven. O comando fará a compilação e iniciará 
 1.  **Navegue para o Diretório Principal:**
 
     ```bash
-    cd meu-primeiro-jadex
+    cd vicia-ai
     ```
 
 2.  **Compilar e Instalar o Agente Java:**
