@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="maven-antrun-" default="main">
+  <target name="main">
+    <path id="compile.classpath">
+      <fileset includes="*.jar" dir="/workspaces/ViciaAI/vicia-ai/libs" />
+    </path>
+    <pathconvert property="libs.classpath" pathsep=":" refid="compile.classpath" />
+    <echo>----------------------------------------------------</echo>
+    <echo>Classpath de Libs Gerado: ${libs.classpath}</echo>
+    <echo>----------------------------------------------------</echo>
+  </target>
+</project>

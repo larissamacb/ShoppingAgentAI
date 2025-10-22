@@ -1,0 +1,39 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+java {
+    // Mantemos Java 11, que é compatível
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+repositories {
+    // Apenas Maven Central é necessário para 'minimal' e 'gson'
+    mavenCentral()
+}
+
+dependencies {
+    // USAREMOS APENAS a 'standard' (que inclui Micro Agents e BDI, etc.)
+    implementation 'org.activecomponents.jadex:jadex-distribution-standard:4.0.241'
+
+    // E o Gson
+    implementation 'com.google.code.gson:gson:2.10.1'
+}
+
+application {
+    // A classe Main continua a ser o ponto de entrada
+    mainClass = 'com.unieuro.main.Main'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+// Encontre esta tarefa no seu build.gradle
+tasks.named('run', JavaExec) {
+    standardInput = System.in
+    // ADICIONE a propriedade '-Djadex.shell=false' aqui
+    jvmArgs = ['-Dfile.encoding=UTF-8', '-Djadex.shell=false']
+}

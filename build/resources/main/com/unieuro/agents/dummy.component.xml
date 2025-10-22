@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component xmlns="http://jadex.sourceforge.net/project"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://jadex.sourceforge.net/project https://raw.githubusercontent.com/actoron/jadex/master/jadex-kernel-component/src/main/resources/jadex/project-2.4.xsd"
+           name="DummyTest"
+           type="component">
+
+    <description>TESTE: Carrega apenas um agente não-BDI.</description>
+
+    <components>
+        <component name="dummy" type="java"> <arguments>
+            <argument name="filename">"com/unieuro/agents/DummyAgent.class"</argument>
+        </arguments>
+        </component>
+    </components>
+</component>

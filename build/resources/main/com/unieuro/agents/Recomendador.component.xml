@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component xmlns="http://jadex.sourceforge.net/project"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://jadex.sourceforge.net/project https://raw.githubusercontent.com/actoron/jadex/master/jadex-kernel-component/src/main/resources/jadex/project-2.4.xsd"
+           name="RecomendadorJogos"
+           type="component">
+
+    <description>Inicia o sistema de recomendação de jogos multiagentes (Micro Agents).</description>
+
+    <components>
+        <component name="ai_handler">
+            <arguments>
+                <argument name="filename">"com/unieuro/agents/AIHandlerAgent.class"</argument>
+            </arguments>
+        </component>
+
+        <component name="scraper">
+            <arguments>
+                <argument name="filename">"com/unieuro/agents/ScraperAgent.class"</argument>
+            </arguments>
+        </component>
+
+        <component name="coordinator">
+            <arguments>
+                <argument name="filename">"com/unieuro/agents/CoordinatorAgent.class"</argument>
+            </arguments>
+            <requiredservices>
+                <requiredservice name="ai_service" type="com.unieuro.services.IAIService">
+                    <binding servicename="ai_handler/IAIService" scope="platform"/>
+                </requiredservice>
+                <requiredservice name="scraper_service" type="com.unieuro.services.IScraperService">
+                    <binding servicename="scraper/IScraperService" scope="platform"/>
+                </requiredservice>
+            </requiredservices>
+        </component>
+    </components>
+</component>
