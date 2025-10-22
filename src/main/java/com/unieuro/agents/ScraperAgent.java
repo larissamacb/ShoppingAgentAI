@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.unieuro.services.IScraperService; // Importa a interface do serviço
+import com.unieuro.services.IScraperService; 
 
 import jadex.bridge.IInternalAccess;
 import jadex.commons.future.Future;
@@ -15,9 +15,9 @@ import jadex.micro.annotation.Implementation;
 import jadex.micro.annotation.ProvidedService;
 import jadex.micro.annotation.ProvidedServices;
 
-@Agent // Anotação básica para Micro Agent
-@ProvidedServices(@ProvidedService(type = IScraperService.class)) // Publica o serviço
-public class ScraperAgent implements IScraperService { // Implementa a interface
+@Agent 
+@ProvidedServices(@ProvidedService(type = IScraperService.class))
+public class ScraperAgent implements IScraperService {
 
     @Agent
     protected IInternalAccess agent;
@@ -28,8 +28,6 @@ public class ScraperAgent implements IScraperService { // Implementa a interface
     public void init() {
         System.out.println("ScraperAgent (Micro) iniciado.");
     }
-
-    // Implementação direta dos métodos da interface IScraperService
 
     @Override
     public IFuture<List<String>> getGameUrls(List<String> tags, int numGames) {

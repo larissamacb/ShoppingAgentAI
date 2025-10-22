@@ -31,9 +31,10 @@ tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
 
-// Encontre esta tarefa no seu build.gradle
 tasks.named('run', JavaExec) {
     standardInput = System.in
-    // ADICIONE a propriedade '-Djadex.shell=false' aqui
-    jvmArgs = ['-Dfile.encoding=UTF-8', '-Djadex.shell=false']
+    // Mantém esta linha:
+    systemProperty 'jadex.shell', 'false' 
+    // Remove '-Djadex.shell=false' daqui:
+    jvmArgs = ['-Dfile.encoding=UTF-8'] 
 }
