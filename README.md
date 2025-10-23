@@ -108,12 +108,12 @@ Para o desenvolvimento do projeto, o ambiente utilizado foi o Codespaces do GitH
 Após a configuração inicial, siga estes passos para executar a aplicação:
 
 1.  **Compilar o Projeto (Build):**
-        ```bash
+        ```
         ./gradlew clean build
         ```
 
 2.  **Executar a Aplicação:**
-        ```bash
+        ```
         ./gradlew -q --no-daemon --console=plain run -Djadex.shell=false
         ```
 
