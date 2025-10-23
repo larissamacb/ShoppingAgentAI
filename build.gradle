@@ -3,38 +3,51 @@ plugins {
     id 'application'
 }
 
+// Java 11 (compatível com seu projeto/Jadex)
 java {
-    // Mantemos Java 11, que é compatível
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
+    // Se preferir travar a ferramenta também:
+    // toolchain {
+    //     languageVersion = JavaLanguageVersion.of(11)
+    // }
 }
 
 repositories {
-    // Apenas Maven Central é necessário para 'minimal' e 'gson'
+    // Para sua combinação atual, mavenCentral tem funcionado.
+    // Se em algum ambiente faltar o artefato do Jadex, adicione:
+    // maven { url = uri('https://nexus.actoron.com/content/repositories/jadex/') }
     mavenCentral()
 }
 
 dependencies {
-    // USAREMOS APENAS a 'standard' (que inclui Micro Agents e BDI, etc.)
+    // Jadex (standard distribution)
     implementation 'org.activecomponents.jadex:jadex-distribution-standard:4.0.241'
 
-    // E o Gson
+    // Gson
     implementation 'com.google.code.gson:gson:2.10.1'
 }
 
 application {
-    // A classe Main continua a ser o ponto de entrada
+    // Ponto de entrada
     mainClass = 'com.unieuro.main.Main'
+
+    // Garante runtime em UTF-8 (conserta acentos no console)
+    applicationDefaultJvmArgs = ['-Dfile.encoding=UTF-8']
 }
 
-tasks.withType(JavaCompile) {
+// Compilação em UTF-8 (evita mojibake em strings do código-fonte)
+tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
+// Execução: mantém STDIN para os prompts e desliga a shell do Jadex
 tasks.named('run', JavaExec) {
     standardInput = System.in
-    // Mantém esta linha:
-    systemProperty 'jadex.shell', 'false' 
-    // Remove '-Djadex.shell=false' daqui:
-    jvmArgs = ['-Dfile.encoding=UTF-8'] 
+    // Desativa shell interativa do Jadex (mantém logs limpos)
+    systemProperty 'jadex.shell', 'false'
+
+    // NÃO precisamos repetir -Dfile.encoding aqui porque já está em applicationDefaultJvmArgs.
+    // Se quiser forçar mais args, pode usar:
+    // jvmArgs += []
 }
