@@ -24,13 +24,12 @@ Este projeto foca em coletar dados de múltiplas fontes (Steam e Metacritic) par
 
 O objetivo do *Vicia AI* é simplificar a escolha de jogos, automatizando a coleta de dados e aplicando lógica avançada de *Inteligência Artificial* para gerar um veredito final.
 
-O processo é iniciado pelo usuário que descreve o tipo de jogo desejado. Em resposta, o sistema:
+O processo é iniciado pelo usuário que descreve o tipo de jogo desejado. Em resposta, o sistema (orquestrado pelos agentes Jadex):
 
-1.  Usa a IA para transformar a descrição em tags de busca (Steam).
-2.  Busca jogos correspondentes na Steam.
-3.  Coleta notas e reviews no Metacritic.
-4.  Gera um resumo conciso dos sentimentos dos usuários (Positivo, Misto, Negativo).
-5.  Emite uma recomendação final, justificando a escolha com base em Descrição do jogo, Metascore, User Score e Resumos de Review.
+1.  Usa a IA (via `AIHandlerAgent`) para transformar a descrição em tags de busca.
+2.  Busca URLs de jogos correspondentes na Steam (via `ScraperAgent`).
+3.  Coleta detalhes (preço, notas, reviews brutos) de cada jogo encontrado (via `ScraperAgent`).
+4.  Usa a IA (via `AIHandlerAgent`) para analisar todos os dados coletados e gerar uma recomendação final justificada.
 
 -----
 
@@ -42,103 +41,88 @@ O processo é iniciado pelo usuário que descreve o tipo de jogo desejado. Em re
       - **Metacritic:** *Metascore* (Nota da Crítica) e *User Score* (Nota do Usuário) extraídos da página principal.
   - **Análise de Sentimento (IA):** Coleta até *10 reviews* por sentimento (Positivas, Mistas e Negativas) e utiliza a IA para criar um resumo conciso de cada sentimento.
   - **Recomendação Final Otimizada:** Gera um parágrafo de recomendação justificado, com base nas notas, descrição do jogo, preço e experiência resumida dos usuários.
-  - **Compatibilidade Terminal:** Todo o output da IA é *transliterado* (sem acentos ou cedilha) para garantir a correta exibição em qualquer console.
 
 -----
 
 ## ⚙️ Arquitetura do Sistema
 
-| Agente / Componente | Função | Tecnologia |
-| :--- | :--- | :--- |
-| *OrchestratorAgent* | *Coordenador Central.* Gerencia o fluxo de 4 passos, a interação com o usuário e a consolidação final dos dados. | *Jadex (Java)* |
-| *Adaptadores (Python)* | Executam tarefas específicas, fazendo um papel de comunicação entre os arquivos Python principais e o Java. | *Python Executor (Java)* |
-| *ai_handler.py* | Contém a lógica de *Inteligência Artificial* (geração de tags e todos os resumos de reviews). | *Google Gemini API* |
-| *steam_scraper.py* | Realiza o Web Scraping da *Steam* (URLs, detalhes, preço, requisitos). | *Requests / BeautifulSoup* |
-| *metacritic_scraper.py* | Realiza o Web Scraping do *Metacritic* (Notas e Reviews). | *Requests / BeautifulSoup* |
+| Agente / Componente | Função | Tecnologia Principal |
+| :------------------ | :----- | :------------------- |
+| **`CoordinatorAgent`** | **Orquestrador Central.** Gerencia o fluxo, interage com o usuário e coordena os outros agentes via chamadas de serviço. | Jadex Micro (Java) |
+| **`AIHandlerAgent`** | **Especialista IA.** Fornece serviços para gerar tags e a recomendação final, delegando para scripts Python. | Jadex Micro (Java), PythonExecutor |
+| **`ScraperAgent`** | **Especialista Web Scraping.** Fornece serviços para buscar URLs e detalhes de jogos, delegando para scripts Python. | Jadex Micro (Java), PythonExecutor |
+| `PythonExecutor.java` | Classe utilitária Java para executar scripts Python e capturar seus resultados (JSON). | Java ProcessBuilder |
+| Scripts Python (`adapter_*.py`, `core/*.py`) | Contêm a lógica real de interação com a API Gemini e Web Scraping (Requests/BeautifulSoup). | Python, Google Gemini API, Requests, BeautifulSoup |
+| Interfaces (`IAIService`, `IScraperService`) | Definem os contratos (métodos) para a comunicação entre os agentes via serviços Jadex. | Java |
+| `Main.java` | Ponto de entrada. Configura e inicia a plataforma Jadex programaticamente, adicionando os agentes. | Java, Jadex Platform API |
+| `build.gradle` | Ferramenta de build. Gerencia dependências (Jadex Standard, Gson) online e define tarefas de compilação/execução. | Gradle |
 
 ### Fluxo de Trabalho
 
 1.  **Entrada:** Usuário insere a descrição e N jogos desejados para a pesquisa (influenciam no tempo de execução e na variabilidade de recomendações).
-2.  **Passo 1 (IA):** OrchestratorAgent → adapter_get_tags.py → Retorna Tags.
-3.  **Passo 2 (Scraping):** OrchestratorAgent → adapter_get_game_urls.py → Retorna URLs de jogos.
+2.  **Geração de Tags:** `CoordinatorAgent` → `AIHandlerAgent.getTags()` → `PythonExecutor` → `adapter_get_tags.py` (IA) → Retorna Tags.
+3.  **Busca de URLs:** `CoordinatorAgent` → `ScraperAgent.getGameUrls()` → `PythonExecutor` → `adapter_get_game_urls.py` (Web) → Retorna URLs.
 4.  **Loop de Análise:** Para cada URL:
-      - OrchestratorAgent → adapter_scrape_details.py (Chama Steam, Metacritic e IA para resumo) → Retorna Dados Consolidados (incluindo notas e os 3 resumos de reviews).
-5.  **Passo 3 (Resumo Final):** OrchestratorAgent → adapter_final_recommendation.py (IA) → Retorna o texto justificando a recomendação.
+    * `CoordinatorAgent` → `ScraperAgent.getGameDetails()` → `PythonExecutor` → `adapter_scrape_details.py` (Web) → Retorna Dados Brutos (incluindo reviews).
+5.  **Recomendação Final:** `CoordinatorAgent` → `AIHandlerAgent.getFinalRecommendation()` (com todos os dados brutos) → `PythonExecutor` → `adapter_final_recommendation.py` (IA) → Retorna Texto Final.
+6.  **Saída:** `CoordinatorAgent` exibe a recomendação no console.
 
 -----
 
 ## 🛠️ Tecnologias Utilizadas
 
 | Categoria | Tecnologia | Notas |
-| :--- | :--- | :--- |
-| *Plataforma Multiagente* | *Jadex Active Components (Micro)* | Orquestração do ciclo de vida e das tarefas em Java. |
-| *Inteligência Artificial* | *Google Gemini API* | Geração de tags, análise de sentimento e geração de resumos finais. |
-| *Comunicação* | *Google Gson* | Conversão de dados (JSON ↔ Java Objects) no PythonExecutor. |
-| *Web Scraping* | *Requests* e *BeautifulSoup* | Coleta de dados estáticos da Steam e Metacritic. |
-| *Variáveis de Ambiente* | *Python-dotenv* | Carregamento da chave de API de forma segura. |
+| :---------------------- | :---------------------------------- | :------------------------------------------------------------------- |
+| *Plataforma Multiagente* | *Jadex Active Components (Micro)* | Orquestração via Micro Agents, configuração programática. |
+| *Build System* | *Gradle (com Wrapper)* | Gerencia dependências (online) e ciclo de vida do build/execução. |
+| *Inteligência Artificial* | *Google Gemini API* | Usada nos scripts Python para geração de tags e recomendação. |
+| *Comunicação Java-Python* | *PythonExecutor (Java ProcessBuilder)* | Executa scripts e troca dados via JSON (stdout). |
+| *Processamento JSON (Java)* | *Google Gson* | Parse do JSON retornado pelos scripts Python. |
+| *Web Scraping (Python)* | *Requests* e *BeautifulSoup* | Usadas nos scripts Python para coletar dados web. |
+| *Variáveis de Ambiente* | *Python-dotenv* | Usada nos scripts Python para carregar a chave de API. |
 
 -----
 
 ## 🚀 Como Executar
 
-Para o desenvolvimento do projeto, o ambiente utilizado foi o Codespaces do GitHub. Recomendamos que o use também.
+Para o desenvolvimento do projeto, o ambiente utilizado foi o Codespaces do GitHub (ambiente Linux). Recomendamos que o use também.
 
 ### Pré-requisitos
 
+1.  **Java JDK (11+):** Necessário para executar o Jadex e o Gradle.
+2.  **Python 3 e Pip:** Necessário para os scripts de IA e scraping.
+3.  **Conexão à Internet:** Para o Gradle baixar dependências e para os scripts acessarem APIs/Web.
+4.  **Chave de API do Google Gemini:** Configure-a no arquivo `.env`.
 
-1.  **Java JDK (11+):** Necessário para a plataforma Jadex.
-2.  **Python 3 e Pip:** Necessário para todos os adaptadores.
-3.  **Maven:** Necessário para compilar e executar o projeto Java.
-4.  **Chave de API do Google Gemini:** Configure-a no arquivo `.env` (veja a seção Instalação).
-
-### Instalação
-
-Siga os passos no terminal do Codespaces para preparar o ambiente:
+### Preparação
 
 1.  **Configurar Chave de API:**
-    Encontre o arquivo `.env` na raiz do projeto e adicione sua chave.
-
-    ```
-    GOOGLE_API_KEY="SEU TOKEN AQUI"
-    ```
-
-2.  **Instalar Dependências do Sistema (Maven e Python):**
-
-    ```bash
-    apt update
-    apt install maven python3 python3-pip
-    ```
-
-3.  **Instalar Dependências Python (Bibliotecas):**
-
-    ```bash
-    pip install -r requirements.txt
-    ```
+    * Crie ou edite o arquivo `.env` na raiz do projeto (`vicia-ai/.env`).
+    * Adicione sua chave:
+        ```
+        GOOGLE_API_KEY="SEU_TOKEN_AQUI"
+        ```
 
 ### Uso
 
-Execute o projeto através do Maven. O comando fará a compilação e iniciará a plataforma de agentes Jadex:
+Após a configuração inicial, siga estes passos para executar a aplicação:
 
-1.  **Navegue para o Diretório Principal:**
+1.  **Compilar o Projeto (Build):**
+        ```
+        ./gradlew clean build
+        ```
 
-    ```bash
-    cd vicia-ai
-    ```
+2.  **Executar a Aplicação:**
+        ```
+        ./gradlew -q --no-daemon --console=plain run -Djadex.shell=false
+        ```
 
-2.  **Compilar e Instalar o Agente Java:**
+    **Explicação das Flags:**
+    * `-q` (quiet): Reduz a quantidade de logs do Gradle.
+    * `--no-daemon`: Executa o Gradle sem usar um processo em background.
+    * `--console=plain`: Formata a saída do console de forma mais simples, sem cores ou formatação especial (ajuda a evitar output "bagunçado").
 
-    ```bash
-    mvn clean install
-    ```
-
-3.  **Executar a Aplicação:**
-   Depois de executar os comandos anteriores, execute apenas este quando quiser uma recomendação de jogo.
-
-    ```bash
-    mvn exec:java
-    ```
-
-O sistema será iniciado e o `OrchestratorAgent` pedirá a **descrição do jogo** e o **número de jogos** (para ele pesquisar e decidir entre eles) diretamente no console do terminal.
+O sistema será iniciado e o `CoordinatorAgent` pedirá a **descrição do jogo** e o **número de jogos** (para ele pesquisar e decidir entre eles) diretamente no console do terminal.
 Use Ctrl + C quando quiser parar a execução.
 
 -----
