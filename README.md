@@ -114,7 +114,7 @@ Após a configuração inicial, siga estes passos para executar a aplicação:
 
 2.  **Executar a Aplicação:**
         ```bash
-        ./gradlew -q --no-daemon --console=plain run
+        ./gradlew -q --no-daemon --console=plain run -Djadex.shell=false
         ```
 
     **Explicação das Flags:**
